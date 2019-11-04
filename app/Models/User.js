@@ -7,6 +7,10 @@ const Model = use('Model')
 const Hash = use('Hash')
 
 class User extends Model {
+  static get hidden() {
+    return ['password']
+  }
+
   static boot() {
     super.boot()
 
@@ -33,6 +37,10 @@ class User extends Model {
    */
   tokens() {
     return this.hasMany('App/Models/Token')
+  }
+
+  signedPreKey() {
+    return this.hasOne('App/Models/SignedPreKey')
   }
 
   preKeys() {
