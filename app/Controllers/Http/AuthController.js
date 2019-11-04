@@ -1,6 +1,8 @@
 'use strict'
 
 const User = use('App/Models/User')
+const SignedPreKey = use('App/Models/SignedPreKey')
+const PreKey = use('App/Models/PreKey')
 
 class AuthController {
   /**
@@ -9,17 +11,47 @@ class AuthController {
   async register({ request, auth, response }) {
     const username = request.input('username')
     const password = request.input('password')
+    const deviceId = request.input('deviceId')
+    const registrationId = request.input('registrationId')
+    const identityKey = request.input('identityKey')
+    const signedPreKey = request.input('signedPreKey')
+    const preKeys = request.input('preKeys')
 
     let user = new User()
     user.username = username
+    user.identifier = user.generateId()
     user.password = password
+    user.deviceId = deviceId
+    user.registrationId = registrationId
+    user.identityKey = identityKey
 
-    let success = await user.save()
+    let userCreated = await user.save()
+    console.log(userCreated)
 
-    if (success) {
+    if (userCreated) {
       let user = await User.findBy('username', username)
+
+      let sPreKey = new SignedPreKey()
+
+      sPreKey.userId = user.id
+      sPreKey.keyId = signedPreKey.keyId
+      sPreKey.key = signedPreKey.key
+      sPreKey.signature = signedPreKey.signature
+      console.log(await sPreKey.save())
+
+      preKeys.map(async pk => {
+        let preKey = new PreKey()
+        preKey.userId = user.id
+        preKey.keyId = pk.keyId
+        preKey.key = pk.key
+        console.log(await preKey.save())
+      })
+
       let accessToken = await auth.generate(user)
-      return response.json({ username: user.username, access_token: accessToken })
+      return response.json({
+        user: { username: user.username, identifier: user.identifier },
+        access_token: accessToken,
+      })
     }
 
     return response.status(401).json({ message: 'Registration failed' })
