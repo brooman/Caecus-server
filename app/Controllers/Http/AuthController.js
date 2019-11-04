@@ -68,7 +68,10 @@ class AuthController {
       if (await auth.attempt(username, password)) {
         let user = await User.findBy('username', username)
         let accessToken = await auth.generate(user)
-        return response.json({ username: user.username, access_token: accessToken })
+        return response.json({
+          user: { username: user.username, identifier: user.identifier },
+          access_token: accessToken,
+        })
       }
     } catch (e) {
       return response.json({ message: 'Invalid login' })
