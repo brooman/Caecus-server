@@ -26,7 +26,6 @@ class AuthController {
     user.identityKey = identityKey
 
     let userCreated = await user.save()
-    console.log(userCreated)
 
     if (userCreated) {
       let user = await User.findBy('username', username)
@@ -37,14 +36,14 @@ class AuthController {
       sPreKey.keyId = signedPreKey.keyId
       sPreKey.key = signedPreKey.key
       sPreKey.signature = signedPreKey.signature
-      console.log(await sPreKey.save())
+      await sPreKey.save()
 
       preKeys.map(async pk => {
         let preKey = new PreKey()
         preKey.userId = user.id
         preKey.keyId = pk.keyId
         preKey.key = pk.key
-        console.log(await preKey.save())
+        await preKey.save()
       })
 
       let accessToken = await auth.generate(user)
