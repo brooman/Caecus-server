@@ -23,4 +23,7 @@ Route.get('/', () => {
 Route.post('/auth/register', 'AuthController.register')
 Route.post('/auth/login', 'AuthController.login')
 
-Route.post('/connect/', 'ConnectionController.fetchPreKeyBundle')
+Route.post('/connect', 'ConnectionController.getContact')
+
+Route.post('/messages/send', 'MessageController.sendMessage')
+Route.post('/messages/recieve', 'MessageController.recieveMessage')
