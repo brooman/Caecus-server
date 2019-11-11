@@ -5,20 +5,28 @@ const SignedPreKey = use('App/Models/SignedPreKey')
 const PreKey = use('App/Models/PreKey')
 
 class ConnectionController {
-  async fetchPreKeyBundle({ request, auth, response }) {
+  async getContact({ request, auth, response }) {
     const username = request.input('username')
     const identifier = request.input('identifier')
 
     const user = await User.findBy({ username: username, identifier: identifier })
 
     if (user) {
-      const PreKeyBundle = {
-        identity: user.identityKey,
-        signedPreKey: await SignedPreKey.findBy('userId', user.id),
-        preKey: await PreKey.findBy('userId', user.id),
+      const data = {
+        user: {
+          username: user.username,
+          identifier: user.identifier,
+          deviceId: user.deviceId,
+        },
+        preKeyBundle: {
+          identity: user.identityKey,
+          registrationId: user.registrationId,
+          signedPreKey: await SignedPreKey.findBy('userId', user.id),
+          preKey: await PreKey.findBy('userId', user.id),
+        },
       }
 
-      return response.json(PreKeyBundle)
+      return response.json(data)
     }
 
     return response.status(404).json({ message: 'User not found' })
