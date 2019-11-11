@@ -10,7 +10,6 @@ class MessageSchema extends Schema {
       table.integer('from')
       table.integer('to')
       table.integer('message')
-      table.string('data')
       table.timestamps()
     })
   }

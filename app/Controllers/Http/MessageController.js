@@ -1,5 +1,8 @@
 'use strict'
 
+const User = use('App/Models/User')
+const Message = use('App/Models/Message')
+
 class MessageController {
   async sendMessage({ request, auth, response }) {
     const fromUsername = request.input('fromUsername')
@@ -8,16 +11,23 @@ class MessageController {
     const toIdentifier = request.input('toIdentifier')
     const encryptedMessage = request.input('message')
 
-    const fromUser = await User.findBy({ username: fromUsername, identifier: fromIdentifier })
-    const toUser = await User.findBy({ username: toUsername, identifier: toIdentifier })
+    const fromUser = await User.findBy({
+      username: fromUsername,
+      identifier: fromIdentifier,
+    })
+    const toUser = await User.findBy({
+      username: toUsername,
+      identifier: toIdentifier,
+    })
 
     let message = new Message()
     message.from = fromUser.id
     message.to = toUser.id
-    message.message = encryptedMessage
-    message.data = '{}'
+    message.message = encryptedMessage.ciphertext
 
-    const saved = await message.save()
+    console.log(encryptedMessage.ciphertext)
+
+    let saved = await message.save()
 
     if (saved) {
       response.json({ message: 'Success' })
@@ -29,12 +39,33 @@ class MessageController {
   async recieveMessages({ request, auth, response }) {
     const username = request.input('username')
     const identifier = request.input('identifier')
-    const user = await User.findBy({ username: username, identifier: identifier })
+    const user = await User.findBy({
+      username: username,
+      identifier: identifier,
+    })
 
     if (user) {
-      const messages = await Message.find({ to: user.id })
+      const messages = await Message.query()
+        .where('to', '=', user.id)
+        .fetch()
 
-      return response.json(messages)
+      const promises = messages.toJSON().map(async (item) => {
+        let user = await User.find(item.from)
+        user = user.toJSON()
+
+        return {
+          username: user.username,
+          identifier: user.identifier,
+          message: item.message,
+          date: item.created_at,
+        }
+      })
+
+      const res = Promise.all(promises).then((completed) => {
+        return completed
+      })
+
+      return response.json(await res)
     }
 
     return response.status(401).json({ message: 'Bad request' })
