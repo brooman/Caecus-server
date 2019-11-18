@@ -23,7 +23,9 @@ Route.get('/', () => {
 Route.post('/auth/register', 'AuthController.register')
 Route.post('/auth/login', 'AuthController.login')
 
-Route.post('/connect', 'ConnectionController.getContact')
+Route.post('/connect/contact', 'ConnectionController.getContact')
+Route.post('/connect/prekeybundle', 'ConnectionController.getPreKeyBundle')
 
 Route.post('/messages/send', 'MessageController.sendMessage')
 Route.post('/messages/recieve', 'MessageController.recieveMessages')
+Route.post('/messages/recieved', 'MessageController.messagesRecieved')

@@ -9,15 +9,39 @@ class ConnectionController {
     const username = request.input('username')
     const identifier = request.input('identifier')
 
-    const user = await User.findBy({ username: username, identifier: identifier })
+    const user = await User.findBy({
+      username: username,
+      identifier: identifier,
+    })
 
     if (user) {
       const data = {
         user: {
           username: user.username,
           identifier: user.identifier,
+          identity: user.identityKey,
+          registrationId: user.registrationId,
           deviceId: user.deviceId,
         },
+      }
+
+      return response.json(data)
+    }
+
+    return response.status(404).json({ message: 'User not found' })
+  }
+
+  async getPreKeyBundle({ request, auth, response }) {
+    const username = request.input('username')
+    const identifier = request.input('identifier')
+
+    const user = await User.findBy({
+      username: username,
+      identifier: identifier,
+    })
+
+    if (user) {
+      const data = {
         preKeyBundle: {
           identity: user.identityKey,
           registrationId: user.registrationId,

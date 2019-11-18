@@ -25,8 +25,6 @@ class MessageController {
     message.to = toUser.id
     message.message = encryptedMessage.ciphertext
 
-    console.log(encryptedMessage.ciphertext)
-
     let saved = await message.save()
 
     if (saved) {
@@ -49,15 +47,17 @@ class MessageController {
         .where('to', '=', user.id)
         .fetch()
 
-      const promises = messages.toJSON().map(async (item) => {
-        let user = await User.find(item.from)
+      const promises = messages.toJSON().map(async (message) => {
+        let user = await User.find(message.from)
         user = user.toJSON()
 
         return {
+          id: message.id,
           username: user.username,
           identifier: user.identifier,
-          message: item.message,
-          date: item.created_at,
+          registrationId: user.registrationId,
+          message: message.message,
+          date: message.created_at,
         }
       })
 
@@ -68,7 +68,21 @@ class MessageController {
       return response.json(await res)
     }
 
-    return response.status(401).json({ message: 'Bad request' })
+    return response.status(400).json({ message: 'Bad request' })
+  }
+
+  async messagesRecieved({ request, auth, response }) {
+    const messageIds = request.input('messageIds')
+
+    const count = await Message.query()
+      .where('id', 'IN', messageIds)
+      .delete()
+
+    console.log(messageIds)
+
+    return response.json({
+      message: `Registerd ${count} message(s) as recieved`,
+    })
   }
 }
 

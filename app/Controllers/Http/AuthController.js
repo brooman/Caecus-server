@@ -18,8 +18,10 @@ class AuthController {
     const preKeys = request.input('preKeys')
 
     let user = new User()
+    const identifier = user.generateId()
+
     user.username = username
-    user.identifier = user.generateId()
+    user.identifier = identifier
     user.password = password
     user.deviceId = deviceId
     user.registrationId = registrationId
@@ -28,7 +30,10 @@ class AuthController {
     let userCreated = await user.save()
 
     if (userCreated) {
-      let user = await User.findBy('username', username)
+      let user = await User.findBy({
+        username: username,
+        identifier: identifier,
+      })
 
       let sPreKey = new SignedPreKey()
 
@@ -38,7 +43,7 @@ class AuthController {
       sPreKey.signature = signedPreKey.signature
       await sPreKey.save()
 
-      preKeys.map(async pk => {
+      preKeys.map(async (pk) => {
         let preKey = new PreKey()
         preKey.userId = user.id
         preKey.keyId = pk.keyId
@@ -61,6 +66,7 @@ class AuthController {
    */
   async login({ request, auth, response }) {
     const username = request.input('username')
+    const identifier = request.input('identifier')
     const password = request.input('password')
 
     try {
